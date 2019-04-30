@@ -4,22 +4,22 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 
 public class NewPostActivity extends AppCompatActivity {
 
-    private Button bidButton;
-    private Button galleryButton;
-    private Button announcementButton;
+    private ImageButton bidButton;
+    private ImageButton galleryButton;
+    private ImageButton announcementButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
 
-        bidButton = (Button) findViewById(R.id.bidButton);
-        galleryButton = (Button) findViewById(R.id.galleryButton);
-        announcementButton = (Button) findViewById(R.id.announcementButton);
+        bidButton = (ImageButton) findViewById(R.id.bidButton);
+        galleryButton = (ImageButton) findViewById(R.id.galleryButton);
+        announcementButton = (ImageButton) findViewById(R.id.announcementButton);
 
         bidButton.setOnClickListener(new View.OnClickListener() {
             @Override

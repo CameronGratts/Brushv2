@@ -8,10 +8,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.View;
@@ -30,6 +33,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity {
@@ -44,9 +50,12 @@ public class MainActivity extends AppCompatActivity {
 
     private Toolbar mToolbar;
     private FirebaseAuth mAuth;
-    private DatabaseReference userRef;
+    private DatabaseReference userRef, postsRef, followingRef;
     private StorageReference storageRef;
     private FirebaseStorage storage;
+
+    ArrayList<String> followingUidList;
+    private long num;
 
     String currentUserID;
     String TAG = "333";
@@ -59,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         currentUserID = mAuth.getCurrentUser().getUid();
         userRef = FirebaseDatabase.getInstance().getReference().child("Users");
+        postsRef = FirebaseDatabase.getInstance().getReference().child("Posts");
+        followingRef = FirebaseDatabase.getInstance().getReference().child("Followers").child(currentUserID).child("following");
+
 
         mToolbar = (Toolbar) findViewById(R.id.main_page_toolbar);
         setSupportActionBar(mToolbar);
@@ -71,20 +83,30 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
 
+        postList = (RecyclerView) findViewById(R.id.all_users_post_list);
+        postList.setHasFixedSize(true);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setReverseLayout(true);
+        linearLayoutManager.setStackFromEnd(true);
+        postList.setLayoutManager(linearLayoutManager);
 
         View navView = navigationView.inflateHeaderView(R.layout.navigation_header);
         NavProfileImage = (CircleImageView) navView.findViewById(R.id.nav_profile_image);
         NavUserName = (TextView) navView.findViewById(R.id.nav_username);
 
+        readData(new FirebaseCallback() {
+            @Override
+            public void onCallback(ArrayList<String> list) {
+                //Log.d(TAG, list.toString());
+            }
+        });
 
         userRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(dataSnapshot.exists())
-                {
-                    if(dataSnapshot.hasChild("Name"))
-                    {
+                if (dataSnapshot.exists()) {
+                    if (dataSnapshot.hasChild("Name")) {
                         //This is getting the users name and username from database.
                         // Make sure the child matches the databases names
                         String name = dataSnapshot.child("Name").getValue().toString();
@@ -92,8 +114,7 @@ public class MainActivity extends AppCompatActivity {
                         //This is displaying the users name in the navigation bard
                         NavUserName.setText(name);
                     }
-                    if(dataSnapshot.hasChild("profilePicture"))
-                    {
+                    if (dataSnapshot.hasChild("profilePicture")) {
                         storage = FirebaseStorage.getInstance();
                         storageRef = storage.getReference();
                         //This is trying to get the image url if it finds it it goes to onSuccess function
@@ -125,8 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item)
-            {
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 UserMenuSelector(item);
                 return false;
             }
@@ -134,21 +154,210 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart()
-    {
+    protected void onStart() {
         super.onStart();
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
-        if(currentUser == null)
-        {
+        if (currentUser == null) {
             sendUserToStartActivity();
-        }
-        else
-        {
+        } else {
             CheckUserExistence();
         }
 
+
+        FirebaseRecyclerAdapter<Posts, PostViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Posts, PostViewHolder>(
+
+                Posts.class,
+                R.layout.feed_gallery_post,
+                PostViewHolder.class,
+                postsRef
+        ) {
+            @Override
+            protected void populateViewHolder(PostViewHolder viewHolder, Posts model, int position) {
+                // **announcement = 1, gallery = 2**
+
+                int choice;
+                Log.d(TAG, "after user" + followingUidList);
+
+                postsRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        num = dataSnapshot.getChildrenCount();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+                int i=0;
+                while(i < num)
+                {
+                    if (model.getPostType().equals("announcement"))
+                    {
+                        choice = 1;
+                        Log.d(TAG, "user id:" + model.getUid());
+                        viewHolder.setTitle(model.getTitle(), choice);
+                        viewHolder.setPostImage(model.getPostimage(), choice);
+                        viewHolder.setDescription(model.getDescription(), choice);
+                        viewHolder.setProfilePicture(model.getProfilePicture(), choice);
+                        viewHolder.setUsername(model.getUsername(), choice);
+                    }
+                    else if (model.getPostType().equals("gallery"))
+                    {
+                        choice = 2;
+                        Log.d(TAG, "user id:" + model.getUid());
+                        viewHolder.setTitle(model.getTitle(), choice);
+                        viewHolder.setPostImage(model.getPostimage(), choice);
+                        viewHolder.setDescription(model.getDescription(), choice);
+                        viewHolder.setProfilePicture(model.getProfilePicture(), choice);
+                        viewHolder.setUsername(model.getUsername(), choice);
+                    }
+                    i++;
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+                /*if (followingUidList == null) {
+                    viewHolder.hidePosts();
+                }
+                else { //following uid list is not null
+                    for (int i = 0; i < followingUidList.size(); i++) {
+                        if(model.getUid().equals(currentUserID)) // if the uid of the post is == to the current user id, don't display on the feed
+                        {
+                            viewHolder.hidePosts();
+                        }
+                        else {
+                            if (model.getUid().equals(followingUidList.get(i)))
+                            {
+                                if (model.getPostType().equals("announcement"))
+                                {
+                                    choice = 1;
+                                    //Log.d(TAG, "user id:" + followingUidList.get(i));
+                                    viewHolder.setTitle(model.getTitle(), choice);
+                                    viewHolder.setPostImage(model.getPostimage(), choice);
+                                    viewHolder.setDescription(model.getDescription(), choice);
+                                    viewHolder.setProfilePicture(model.getProfilePicture(), choice);
+                                    viewHolder.setUsername(model.getUsername(), choice);
+                                }
+                                else if (model.getPostType().equals("gallery"))
+                                {
+                                    choice = 2;
+                                    //Log.d(TAG, "user id:" + followingUidList.get(i));
+                                    viewHolder.setTitle(model.getTitle(), choice);
+                                    viewHolder.setPostImage(model.getPostimage(), choice);
+                                    viewHolder.setDescription(model.getDescription(), choice);
+                                    viewHolder.setProfilePicture(model.getProfilePicture(), choice);
+                                    viewHolder.setUsername(model.getUsername(), choice);
+                                }
+                            }
+                            else
+                            {
+                                choice = 0;
+                                viewHolder.setTitle(model.getTitle(), choice);
+                            }
+                        }
+                    }
+                }*/
+            }
+
+        };
+
+        postList.setAdapter(firebaseRecyclerAdapter);
+
+    }
+
+    private void readData(final FirebaseCallback firebaseCallback)
+    {
+        followingRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                followingUidList = new ArrayList<>();
+                for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                    followingUidList.add(childSnapshot.getKey());
+                }
+                firebaseCallback.onCallback(followingUidList);
+
+                Log.d(TAG, "before user" + followingUidList);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private interface FirebaseCallback
+    {
+        void onCallback(ArrayList<String> list);
+    }
+
+    public static class PostViewHolder extends RecyclerView.ViewHolder {
+
+        View mView;
+        String T = "333";
+
+        public PostViewHolder(View itemView) {
+            super(itemView);
+
+            mView = itemView;
+        }
+
+        public void setTitle(String title, int choice) {
+            if (choice == 1) {
+                TextView postTitle = (TextView) mView.findViewById(R.id.feed_gallery_title);
+                postTitle.setText(title);
+            } else if (choice == 2) {
+                TextView postTitle = (TextView) mView.findViewById(R.id.feed_gallery_title);
+                postTitle.setVisibility(View.GONE);
+            } else {
+                mView.setVisibility(View.GONE);
+            }
+        }
+
+        public void setDescription(String description, int choice) {
+            TextView postDescription = (TextView) mView.findViewById(R.id.feed_gallery_description);
+            postDescription.setText(description);
+        }
+
+        public void setProfilePicture(String profilePicture, int choice) {
+            CircleImageView postProfilePicture = (CircleImageView) mView.findViewById(R.id.feed_gallery_profilepicture);
+            Picasso.get().load(profilePicture).into(postProfilePicture);
+        }
+
+        public void setUsername(String username, int choice) {
+            TextView postUsername = (TextView) mView.findViewById(R.id.feed_gallery_username);
+            postUsername.setText(username);
+        }
+
+        public void setPostImage(String postImage, int choice) {
+            if (choice == 1) {
+                ImageView post_image = (ImageView) mView.findViewById(R.id.feed_gallery_image);
+                post_image.setVisibility(View.GONE);
+            } else {
+                ImageView post_image = (ImageView) mView.findViewById(R.id.feed_gallery_image);
+                Picasso.get().load(postImage).into(post_image);
+            }
+        }
+        public void hidePosts()
+        {
+            mView.setVisibility(View.GONE);
+        }
     }
 
     private void CheckUserExistence()
@@ -201,6 +410,14 @@ public class MainActivity extends AppCompatActivity {
         startActivity(listFollowersIntent);
     }
 
+    private void sendUserToProfileActivity()
+    {
+        Intent profileIntent = new Intent(MainActivity.this, UserProfileActivity.class);
+        //profileIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        profileIntent.putExtra("Users", currentUserID);
+        startActivity(profileIntent);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -223,6 +440,7 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.nav_profile:
                 //Toast.makeText(this, "profile", Toast.LENGTH_SHORT).show();
+                sendUserToProfileActivity();
                 break;
 
             case R.id.nav_post:
@@ -231,15 +449,7 @@ public class MainActivity extends AppCompatActivity {
                 //Toast.makeText(this, "post", Toast.LENGTH_SHORT).show();
                 break;
 
-            case R.id.nav_messages:
-                //Toast.makeText(this, "messages", Toast.LENGTH_SHORT).show();
-                sendUserToMessagesActivity();
-                break;
-
             case R.id.nav_followers:
-                //Toast.makeText(this, "followers", Toast.LENGTH_SHORT).show();
-                //Intent listFollowersIntent = new Intent(MainActivity.this, ListFollowersActivity.class);
-                //startActivity(listFollowersIntent);
                 sendUserToFollowersActivity();
                 break;
 

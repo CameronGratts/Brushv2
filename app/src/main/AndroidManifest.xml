@@ -16,15 +16,18 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".ChatActivity"
-            android:parentActivityName=".ListFollowersActivity"></activity>
+            android:parentActivityName=".PublicProfileActivity"></activity>
         <activity android:name=".Followers" />
-        <activity android:name=".ListFollowersActivity" />
-        <activity android:name=".UserProfileActivity" />
+        <activity android:name=".ListFollowersActivity"
+            android:parentActivityName=".MainActivity"></activity>
+        <activity android:name=".UserProfileActivity"
+            android:parentActivityName=".MainActivity"/>
         <activity android:name=".ShowProfilePictureActivity" />
         <activity
             android:name=".SettingsActivity"
             android:parentActivityName=".UserProfileActivity" />
-        <activity android:name=".PublicProfileActivity" />
+        <activity android:name=".PublicProfileActivity"
+            android:parentActivityName=".ListFollowersActivity"/>
         <activity
             android:name=".ForgotPasswordActivity"
             android:parentActivityName=".StartActivity" />

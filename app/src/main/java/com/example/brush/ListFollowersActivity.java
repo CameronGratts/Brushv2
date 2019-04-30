@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v7.view.menu.MenuView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -38,6 +39,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ListFollowersActivity extends AppCompatActivity {
 
+    private Toolbar mToolbar;
     private RecyclerView listFollowers;
     private DatabaseReference followersRef, userRef, visitingUserRef;
     private FirebaseAuth mAuth;
@@ -53,6 +55,7 @@ public class ListFollowersActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_followers);
 
@@ -60,6 +63,11 @@ public class ListFollowersActivity extends AppCompatActivity {
         online_user_id = mAuth.getCurrentUser().getUid();
         followersRef = FirebaseDatabase.getInstance().getReference().child("Followers").child(online_user_id).child("followers");
         userRef = FirebaseDatabase.getInstance().getReference().child("Users");
+
+        mToolbar = (Toolbar) findViewById(R.id.list_followers_toolbar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         listFollowers = (RecyclerView) findViewById(R.id.list_followers_recycler);
         //list_followers_picture = (CircleImageView) findViewById(R.id.list_followers_pic);
@@ -99,10 +107,11 @@ public class ListFollowersActivity extends AppCompatActivity {
                         {
                             final String userName = dataSnapshot.child("Username").getValue().toString();
                             final String fullName = dataSnapshot.child("Name").getValue().toString();
-                           // final String profilePic = dataSnapshot.child("Username")
+                            final String profilePic = dataSnapshot.child("profilePictureLink").getValue().toString();
 
                             viewHolder.setFullname(fullName);
                             viewHolder.setUsername(userName);
+                            viewHolder.setProfileImage(profilePic);
 
                             viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                                 @Override
@@ -175,11 +184,11 @@ public class ListFollowersActivity extends AppCompatActivity {
             TextView uName = (TextView) mView.findViewById(R.id.list_followers_un);
             uName.setText("@" + username);
         }
-        /*
-        public void setProfileImage(Context ctx, String profileImage){
 
-            CircleImageView myImage = (CircleImageView) mView.findViewById(R.id.setup_profile_picture);
+        public void setProfileImage(String profileImage){
 
-        }*/
+            CircleImageView myImage = (CircleImageView) mView.findViewById(R.id.list_followers_pic);
+            Picasso.get().load(profileImage).into(myImage);
+        }
     }
 }

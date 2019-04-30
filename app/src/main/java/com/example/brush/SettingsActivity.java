@@ -1,16 +1,22 @@
 package com.example.brush;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Button;
 import android.support.v7.widget.Toolbar;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.app.ProgressDialog;
 
@@ -35,11 +41,14 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SettingsActivity extends AppCompatActivity {
 
     private EditText full_name, username, bio;
-    private ImageButton edit_picture;
+    private CircleImageView edit_picture;
     private Button settings_confirm;
     private ProgressDialog loadingBar;
 
@@ -47,13 +56,16 @@ public class SettingsActivity extends AppCompatActivity {
 
     private DatabaseReference user_profile_settings_ref;
     private FirebaseAuth m_auth;
-    private DatabaseReference UsersRef;
     private StorageReference UserProfileImageRef;
     private FirebaseStorage firebaseStorage;
+    private StorageReference storageRef;
+    private FirebaseStorage storage;
 
     private String current_user_id;
 
     Uri imageUri;
+
+    String TAG = "FAIL";
 
     static final int gallery_pick =1;
 
@@ -64,8 +76,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         m_toolbar = (Toolbar) findViewById(R.id.user_profile_settings_toolbar);
         setSupportActionBar(m_toolbar);
-        getSupportActionBar().setTitle("Profile Settings");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         m_auth = FirebaseAuth.getInstance();
         current_user_id = m_auth.getCurrentUser().getUid();
@@ -75,21 +87,75 @@ public class SettingsActivity extends AppCompatActivity {
         full_name = (EditText) findViewById(R.id.user_profile_settings_full_name);
         username = (EditText) findViewById(R.id.user_profile_settings_username);
         bio = (EditText) findViewById(R.id.user_profile_settings_bio);
-        edit_picture = (ImageButton) findViewById(R.id.user_profile_settings_default_pic);
+        edit_picture = (CircleImageView) findViewById(R.id.user_profile_settings_default_pic);
         settings_confirm = (Button) findViewById(R.id.user_profile_settings_confirm);
         loadingBar = new ProgressDialog(this);
+
+        bio.setHorizontallyScrolling(false);
+        bio.setMaxLines(4);
+
+        bio.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == 4) { //actionId 4 for actionDone And 6 for actionSend
+
+
+                    //perform action what you want
+
+                    return true;
+                } else
+                    return false;
+            }
+        });
+
+        user_profile_settings_ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(dataSnapshot.exists())
+                {
+                    Log.d(TAG, "onFailure:");
+                    if(dataSnapshot.hasChild("profilePicture"))
+                    {
+                        storage = FirebaseStorage.getInstance();
+                        storageRef = storage.getReference();
+                        //This is trying to get the image url if it finds it it goes to onSuccess function
+                        storageRef.child("profile images/" + current_user_id).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                // uri is the link, we just have to change it to a string
+
+                                String profilePicture = uri.toString();
+                                Picasso.get().load(profilePicture).into(edit_picture);
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                // Handle any errors
+                                Log.d(TAG, "onFailure:");
+                            }
+                        });
+
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         user_profile_settings_ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
 
-                    String myProfileImage = dataSnapshot.child("profilePicture").getValue().toString();
                     String myFullName = dataSnapshot.child("Name").getValue().toString();
                     String myUsername = dataSnapshot.child("Username").getValue().toString();
                     String myBio = dataSnapshot.child("Bio").getValue().toString();
 
-                    Picasso.get().load(myProfileImage).placeholder(R.drawable.dfp).into(edit_picture);
                     full_name.setText(myFullName);
                     username.setText(myUsername);
                     bio.setText(myBio);
@@ -112,18 +178,49 @@ public class SettingsActivity extends AppCompatActivity {
 
         edit_picture.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Intent galleryIntent = new Intent();
-                galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-                galleryIntent.setType("image/*");
-                startActivityForResult(galleryIntent, gallery_pick);
+            public void onClick(View view)
+            {
+                checkAndroidVersion();
             }
         });
+
+    }
+
+    public void checkAndroidVersion(){
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 555);
+            } catch (Exception e)
+            {
+
+            }
+            //If versions good we call the pick image function
+        } else {
+            pickImage();
+        }
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == 555 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            pickImage();
+        } else {
+            checkAndroidVersion();
+        }
+    }
+
+    //This crops and picks the image and afterwards goes to the onActivityResult function
+    public void pickImage() {
+        CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setMultiTouchEnabled(true)
+                .start(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //This gets the URI of the image that has been cropped
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
 
             //The result variable is the result of the crop image.
@@ -170,14 +267,13 @@ public class SettingsActivity extends AppCompatActivity {
 
                         //Storing the image to the database
                         final String downloadUrl = taskSnapshot.getMetadata().getReference().getDownloadUrl().toString();
-                        UsersRef.child("Profile Picture").setValue(current_user_id);
+                        user_profile_settings_ref.child("profilePicture").setValue(current_user_id);
 
                         edit_picture.setImageURI(imageUri);
 
                         Toast.makeText(SettingsActivity.this, "Image stored successfully to Firebase", Toast.LENGTH_SHORT).show();
-
-                        Intent selfIntent = new Intent(SettingsActivity.this, SettingsActivity.class);
-                        startActivity(selfIntent);
+                        //Intent setupIntent = new Intent(SetupActivity.this, SetupActivity.class);
+                        //startActivity(setupIntent);
 
                         loadingBar.dismiss();
                     }
@@ -188,29 +284,33 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void ValidateAccountInfo()
     {
+
         String myFullName = full_name.getText().toString();
         String myUsername = username.getText().toString();
         String myBio = bio.getText().toString();
 
-        if(TextUtils.isEmpty(myUsername))
+        if(myUsername.length() > 30)
         {
-            Toast.makeText(this, "Please write your username...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Username exceeds max length (30 characters)", Toast.LENGTH_SHORT).show();
         }
-        else if(TextUtils.isEmpty(myFullName))
+        else if(myBio.length() > 150)
         {
-            Toast.makeText(this, "Please write your full name...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Bio exceeds max length (150 characters)", Toast.LENGTH_SHORT).show();
         }
-        else if(TextUtils.isEmpty(myBio))
-        {
-            Toast.makeText(this, "Please enter your bio...", Toast.LENGTH_SHORT).show();
-        }
-        else
-        {
-            loadingBar.setTitle("Profile Image");
-            loadingBar.setMessage("Please wait, while we are updating your profile picture");
-            loadingBar.show();
-            loadingBar.setCanceledOnTouchOutside(true);
-            UpdateAccountInfo(myFullName, myUsername, myBio);
+        else {
+            if (TextUtils.isEmpty(myUsername)) {
+                Toast.makeText(this, "Please write your username...", Toast.LENGTH_SHORT).show();
+            } else if (TextUtils.isEmpty(myFullName)) {
+                Toast.makeText(this, "Please write your full name...", Toast.LENGTH_SHORT).show();
+            } else if (TextUtils.isEmpty(myBio)) {
+                Toast.makeText(this, "Please enter your bio...", Toast.LENGTH_SHORT).show();
+            } else {
+                loadingBar.setTitle("Profile Image");
+                loadingBar.setMessage("Please wait, while we are updating your profile picture");
+                loadingBar.show();
+                loadingBar.setCanceledOnTouchOutside(true);
+                UpdateAccountInfo(myFullName, myUsername, myBio);
+            }
         }
     }
 

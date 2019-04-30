@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,9 +24,11 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.MessageViewHolder> {
 
-    private List<Messages> UserMessagesList;
+    private final List<Messages> UserMessagesList;
     private FirebaseAuth mAuth;
-    private DatabaseReference UsersDatabaseRef;
+    private DatabaseReference UsersDatabaseRef, SendToUserIDRef;
+
+    private CircleImageView MessagerProfileImage;
 
     private String TAG = "-9999";
 
@@ -39,7 +40,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
     public class MessageViewHolder extends RecyclerView.ViewHolder {
 
         public TextView SenderMessageText, ReceiverMessageText;
-        public CircleImageView ReceiverProfileImage;
+        //public CircleImageView ReceiverProfileImage;
 
         public MessageViewHolder(View itemView){
 
@@ -47,7 +48,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
 
             SenderMessageText = (TextView)itemView.findViewById(R.id.sender_message_text);
             ReceiverMessageText = (TextView)itemView.findViewById(R.id.receiver_message_text);
-            ReceiverProfileImage = (CircleImageView)itemView.findViewById(R.id.message_profile_image);
+            MessagerProfileImage = (CircleImageView)itemView.findViewById(R.id.custom_profile_image);
+
+
+
+           // ReceiverProfileImage = (CircleImageView)itemView.findViewById(R.id.message_profile_image);
+            //ReceiverProfileImage = (CircleImageView)itemView.findViewById(R.id.message_profile_image);
         }
     }
 
@@ -66,7 +72,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
     @Override
     public void onBindViewHolder(@NonNull final MessageViewHolder holder, int position){
 
-        Log.d(TAG, "TESTING");
+        //Log.d(TAG, "TESTING");
 
         String MessageSenderId = mAuth.getCurrentUser().getUid();
         Messages messages = UserMessagesList.get(position);
@@ -75,6 +81,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         String FromMessageType = messages.gettype();
 
         UsersDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users").child(FromUserId);
+
+        Log.d("33333", "onBindViewHolder: " + UsersDatabaseRef);
+
+        //String image = UsersDatabaseRef.child("profilePictureLink").toString();
+        //Picasso.get().load(image).into(MessagerProfileImage);
 
         Log.d(TAG, FromUserId + " " + FromMessageType);
 
@@ -85,10 +96,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
 
                 if(dataSnapshot.exists())
                 {
-                    //String image = dataSnapshot.child("Profile Picture").getValue().toString();
-
-                    //Picasso.with(holder.ReceiverProfileImage.getContext()).load(image)
-                     //       .placeholder(R.drawable.default_profile_picture).into(holder.ReceiverProfileImage);
+                    //String image = dataSnapshot.child("profilePictureLink").getValue().toString();
+                    //Picasso.get().load(image).into(ReceiverProfileImage);
                 }
             }
 
@@ -101,22 +110,21 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         if(FromMessageType.equals("text"))
         {
             holder.ReceiverMessageText.setVisibility(View.INVISIBLE);
-            holder.ReceiverProfileImage.setVisibility(View.INVISIBLE);
+            //ReceiverProfileImage.setVisibility(View.INVISIBLE);
 
             if(FromUserId.equals(MessageSenderId))
             {
                 holder.SenderMessageText.setBackgroundResource(R.drawable.sender_message_text_background);
                 holder.SenderMessageText.setTextColor(Color.WHITE);
-                holder.SenderMessageText.setGravity(Gravity.RIGHT);
+                holder.SenderMessageText.setGravity(Gravity.LEFT);
                 holder.SenderMessageText.setText(messages.getmessage());
             }
             else
             {
                 holder.SenderMessageText.setVisibility(View.INVISIBLE);
-
                 holder.ReceiverMessageText.setVisibility(View.VISIBLE);
-                holder.ReceiverProfileImage.setVisibility(View.VISIBLE);
 
+               // ReceiverProfileImage.setVisibility(View.VISIBLE);
                 holder.ReceiverMessageText.setBackgroundResource(R.drawable.receiver_message_text_background);
                 holder.ReceiverMessageText.setTextColor(Color.WHITE);
                 holder.ReceiverMessageText.setGravity(Gravity.LEFT);

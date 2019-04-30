@@ -26,12 +26,6 @@
         app:iconTint="@color/colorPrimary"/>
 
     <item
-        android:id="@+id/nav_messages"
-        android:title="Messages"
-        android:icon="@drawable/messages"
-        app:iconTint="@color/colorPrimary"/>
-
-    <item
         android:id="@+id/nav_search"
         android:title="Search"
         android:icon="@drawable/nav_search"

@@ -1,35 +1,42 @@
 package com.example.brush;
 
-import android.content.Intent;
-import android.os.Bundle;
+import android.app.ProgressDialog;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
+import android.content.Intent;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
-
-import android.net.Uri;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.net.Uri;
 import android.widget.Toast;
+import android.text.TextUtils;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnPausedListener;
-import com.google.firebase.storage.OnProgressListener;
-import com.google.firebase.storage.StorageMetadata;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+
 
 public class GalleryPostActivity extends AppCompatActivity {
 
@@ -37,79 +44,150 @@ public class GalleryPostActivity extends AppCompatActivity {
     private ImageButton post_image;
     private Button post_post;
     private EditText post_description;
+    private RadioGroup category_group;
     private RadioButton post_category1;
     private RadioButton post_category2;
     private RadioButton post_category3;
     private RadioButton post_category4;
+    private TextView post_select;
 
-
-    private static final int Gallery_Pick = 1;
+    private static final int Gallery_pick = 1;
     private Uri ImageUri;
-    private String description;
-
-    private StorageReference PostImagesReference;
-
+    private StorageReference PostImagesreference;
+    private DatabaseReference GalleryRef;
+    private DatabaseReference UsersRef;
     private String saveCurrentDate;
     private String saveCurrentTime;
     private String postRandomName;
+    private String downloadUrl;
+    private FirebaseAuth mAuth;
+    private String current_user_id;
+    private ProgressDialog loadingbar;
+    private String category;
+    private String tempcategory;
+    private String username;
+    private String profilePicture;
+    private String digital;
+    private String traditional;
+    private String photography;
+    private String craft;
 
-    private String TAG = "333";
+    private int selectedButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery_post);
 
-        PostImagesReference = FirebaseStorage.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
+
+        current_user_id = mAuth.getCurrentUser().getUid();
+        PostImagesreference = FirebaseStorage.getInstance().getReference();
+        GalleryRef = FirebaseDatabase.getInstance().getReference().child("Posts");
+        UsersRef = FirebaseDatabase.getInstance().getReference().child("Users").child(current_user_id);
+        /*GalleryRef.child("postRandomName").child("uid").setValue();
+        GalleryRef.child("postRandomName").child("date").setValue(" ");
+        GalleryRef.child("postRandomName").child("time").setValue(" ");
+        GalleryRef.child("postRandomName").child("description").setValue(" ");
+        GalleryRef.child("postRandomName").child("postimage").setValue(" ");
+        GalleryRef.child("postRandomName").child("category").setValue(" ");*/
+
+
+        mToolbar = (Toolbar) findViewById(R.id.update_post_page_toolbar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setTitle("Post to Gallery");
 
         post_image = (ImageButton) findViewById(R.id.post_image);
-        post_post = (Button) findViewById(R.id.a_post);
+        post_post = (Button) findViewById(R.id.post_post);
         post_description = (EditText) findViewById(R.id.post_description);
+        post_select = (TextView) findViewById(R.id.post_select);
+        category_group = (RadioGroup) findViewById(R.id.category_group);
         post_category1 = (RadioButton) findViewById(R.id.post_category1);
         post_category2 = (RadioButton) findViewById(R.id.post_category2);
         post_category3 = (RadioButton) findViewById(R.id.post_category3);
         post_category4 = (RadioButton) findViewById(R.id.post_category4);
 
+        post_category1.setTag(1);
+        post_category2.setTag(2);
+        post_category3.setTag(3);
+        post_category4.setTag(4);
 
-        //mToolbar = (Toolbar) findViewById(R.id.update_post_bar_layout);
-        //setSupportActionBar(mToolbar);
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //getSupportActionBar().setDisplayShowHomeEnabled(true);
-        //getSupportActionBar().setTitle("Post to Gallery");
+        digital = Integer.toString(R.id.post_category1);
+        traditional = Integer.toString(R.id.post_category2);
+        photography= Integer.toString(R.id.post_category3);
+        craft = Integer.toString(R.id.post_category4);
+
+        loadingbar = new ProgressDialog(this);
 
 
-        post_image.setOnClickListener(new View.OnClickListener() {
+        post_image.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 OpenGallery();
             }
         });
 
-        post_post.setOnClickListener(new View.OnClickListener() {
+        post_post.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
+                selectedButton = category_group.getCheckedRadioButtonId();
+                tempcategory = Integer.toString(selectedButton);
+                Log.d(tempcategory,"category");
                 ValidatePostInfo();
+            }
+        });
+        UsersRef.addValueEventListener(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot)
+            {
+                username = dataSnapshot.child("Username").getValue().toString();
+                profilePicture = dataSnapshot.child("profilePictureLink").getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError)
+            {
 
             }
         });
-    }
-
-    private void ValidatePostInfo() {
-        description = post_description.getText().toString();
-
-        if (ImageUri == null) {
-            Toast.makeText(GalleryPostActivity.this, "Please select post image", Toast.LENGTH_SHORT).show();
-        }
-        if (TextUtils.isEmpty(description)) {
-            Toast.makeText(GalleryPostActivity.this, "Please write post description...", Toast.LENGTH_SHORT).show();
-        } else {
-            StoringImagetoFirebaseStorage();
-        }
-
 
     }
 
-    private void StoringImagetoFirebaseStorage() {
+
+    private void ValidatePostInfo()
+    {
+        String description = post_description.getText().toString();
+
+        if(ImageUri == null)
+        {
+            Toast.makeText(this, "Please select post image...", Toast.LENGTH_SHORT).show();
+        }
+        else if(TextUtils.isEmpty(description))
+        {
+            Toast.makeText(this, "Please write post description...", Toast.LENGTH_SHORT).show();
+        }
+
+        else
+        {
+            loadingbar.setTitle("Add new post");
+            loadingbar.setMessage("Please wait, while we are adding your new post");
+            loadingbar.show();
+            loadingbar.setCanceledOnTouchOutside(true);
+            StoringImageToFirebaseStorage(description);
+        }
+
+    }
+
+    private void StoringImageToFirebaseStorage(final String description)
+    {
         Calendar calForDate = Calendar.getInstance();
         SimpleDateFormat currentDate = new SimpleDateFormat("dd-MMMM-yyyy");
         saveCurrentDate = currentDate.format(calForDate.getTime());
@@ -118,59 +196,136 @@ public class GalleryPostActivity extends AppCompatActivity {
         saveCurrentTime = currentTime.format(calForTime.getTime());
 
         postRandomName = saveCurrentDate + saveCurrentTime;
+        StorageReference filePath = PostImagesreference.child("Post Images").child(ImageUri.getLastPathSegment() + postRandomName + ".jpg");
 
-
-        StorageReference filePath = PostImagesReference.child("Gallery Images").child(ImageUri.getLastPathSegment() + postRandomName + ".jpg");
-        filePath.putFile(ImageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+        filePath.putFile(ImageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>()
+        {
             @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                if (task.isSuccessful()) {
-                    Toast.makeText(GalleryPostActivity.this, "image uploaded successfully to storage...", Toast.LENGTH_SHORT).show();
-                } else {
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task)
+            {
+                if(task.isSuccessful())
+                {
+                    downloadUrl = task.getResult().getDownloadUrl().toString();
+                    Toast.makeText(GalleryPostActivity.this,"Image uploaded successfully...",Toast.LENGTH_SHORT);
+
+                    SavingPostInfoToDatabase(description);
+                }
+                else
+                {
                     String message = task.getException().getMessage();
-                    Toast.makeText(GalleryPostActivity.this, "error occurred: " + message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GalleryPostActivity.this,"Error occurred: " + message,Toast.LENGTH_SHORT);
                 }
             }
         });
+    }
 
+    private void SavingPostInfoToDatabase(final String description)
+    {
+        HashMap galleryMap = new HashMap();
+
+        if ( tempcategory.equals(digital))
+        {
+            category = "Digital Art";
+        }
+        else if ( tempcategory.equals(traditional))
+        {
+            category = "Traditional Art";
+        }
+        else if ( tempcategory.equals(photography))
+        {
+            category = "Photography";
+        }
+        else
+        {
+            category = "Artisan Crafts";
+        }
+
+
+        galleryMap.put("uid",current_user_id);
+        galleryMap.put("date",saveCurrentDate);
+        galleryMap.put("time",saveCurrentTime);
+        galleryMap.put("description",description);
+        galleryMap.put("postimage",downloadUrl);
+        galleryMap.put("category",category);
+        galleryMap.put("username",username);
+        galleryMap.put("profilePicture",profilePicture);
+        galleryMap.put("postType","gallery");
+
+
+        //galleryMap.put("profileImage",userProfileImage);
+        //galleryMap.put("fullname",Userfullname);
+
+        GalleryRef.child(current_user_id + postRandomName).updateChildren(galleryMap).addOnCompleteListener(new OnCompleteListener() {
+            @Override
+            public void onComplete(@NonNull Task task)
+            {
+                if (task.isSuccessful())
+                {
+                    SendUserToMainActivity();
+                    Toast.makeText(GalleryPostActivity.this, "New post is created successfully",Toast.LENGTH_SHORT);
+                    loadingbar.dismiss();
+                }
+                else
+                {
+                    Toast.makeText(GalleryPostActivity.this, "Error occurred while updating post ",Toast.LENGTH_SHORT);
+                    loadingbar.dismiss();
+                }
+            }
+        });
     }
 
     private void OpenGallery()
     {
-        Intent galleryIntent = new Intent();
-        galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-        galleryIntent.setType("image/*)");
-        Log.d(TAG, "Before");
-        startActivityForResult(galleryIntent,Gallery_Pick);
+        CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setMultiTouchEnabled(true)
+                .start(this);
+        //Intent galleryIntent = new Intent();
+        //galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+        //galleryIntent.setType("image/*");
+        //startActivityForResult(galleryIntent,Gallery_pick);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == Gallery_Pick && resultCode == RESULT_OK && data!=null)
+        if(requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE)
         {
-            ImageUri = data.getData();
-            post_image.setImageURI(ImageUri);
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+
+            if(resultCode == RESULT_OK)
+            {
+                loadingbar.setTitle("Gallery Post");
+                loadingbar.setMessage("Please wait while we are cropping your image...");
+                loadingbar.show();
+                loadingbar.setCanceledOnTouchOutside(true);
+
+                ImageUri = result.getUri();
+                post_image.setImageURI(ImageUri);
+
+                loadingbar.dismiss();
+            }
+
         }
+
     }
 
-
-    /*
     @Override
-    protected void onActivityResult (int requestCode, int resultCode, Intent data)
-    {
-        Log.d(TAG, "After");
-        super.onActivityResult(requestCode, resultCode, data);
+    public boolean onOptionsItemSelected(MenuItem item) {
 
-        if (requestCode == Gallery_Pick && resultCode == RESULT_OK && data!=null)
+        int id= item.getItemId();
+        if(id == android.R.id.home)
         {
-            ImageUri = data.getData();
-            post_image.setImageURI(ImageUri);
+            SendUserToMainActivity();
+
         }
-    }*/
+        return super.onOptionsItemSelected(item);
+    }
 
+    private void SendUserToMainActivity()
+    {
+        Intent mainIntent = new Intent (GalleryPostActivity.this,MainActivity.class );
+        startActivity(mainIntent);
+    }
 }
-
-

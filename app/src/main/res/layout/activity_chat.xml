@@ -33,15 +33,11 @@
         android:background="@android:color/background_light"
         android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/send_image_button"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_select_image" />
+
 
         <EditText
             android:id="@+id/input_message"
-            android:layout_width="300dp"
+            android:layout_width="305dp"
             android:layout_height="wrap_content"
             android:hint="Write your message here"
             android:padding="17dp" />
@@ -49,7 +45,7 @@
         <ImageButton
             android:id="@+id/send_message_button"
             android:layout_width="50dp"
-            android:layout_height="wrap_content"
+            android:layout_height="57dp"
             android:src="@drawable/ic_send_message" />
 
 

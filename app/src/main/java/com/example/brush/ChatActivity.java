@@ -1,6 +1,7 @@
 package com.example.brush;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.Image;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
@@ -9,7 +10,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CalendarView;
 import android.widget.EditText;
@@ -43,7 +46,8 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class ChatActivity extends AppCompatActivity {
 
     private Toolbar ChattoolBar;
-    private ImageButton SendMessageButton, SendImageButton;
+    private Toolbar mToolbar;
+    private ImageButton SendMessageButton;
     private EditText userMessageInput;
     private RecyclerView userMessagesList;
     private final List<Messages> messagesList = new ArrayList<>();
@@ -52,9 +56,10 @@ public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageReceiverName, messageSenderID, saveCurrentDate, saveCurrentTime;
     private TextView receiverName;
     private CircleImageView receiverProfileImage;
-    private DatabaseReference RootRef;
+    private DatabaseReference RootRef, userProfilePic;
     private ImageButton userProfileImage;
     private FirebaseAuth mauth;
+    private String TAG = "666";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +69,22 @@ public class ChatActivity extends AppCompatActivity {
         mauth = FirebaseAuth.getInstance();
         messageSenderID = mauth.getCurrentUser().getUid();
 
+        mToolbar = (Toolbar) findViewById(R.id.chat_bar_layout);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
         RootRef = FirebaseDatabase.getInstance().getReference();
-
-
-
         messageReceiverID = getIntent().getExtras().get("userID").toString();
         messageReceiverName = getIntent().getExtras().get("userName").toString();
+
+        userProfilePic = FirebaseDatabase.getInstance().getReference().child("Users").child(messageReceiverID);
+
+
+        //final String profilePic = RootRef.child(messageSenderID).child("profilePictureLink").toString();
+
+        //receiverProfileImage = (CircleImageView) findViewById(R.id.custom_profile_image);
+        //Picasso.get().load(profilePic).into(receiverProfileImage);
 
         InitializeFields();
         DisplayReceiverInfo();
@@ -155,6 +170,7 @@ public class ChatActivity extends AppCompatActivity {
             messageTextBody.put("time", saveCurrentTime);
             messageTextBody.put("date", saveCurrentDate);
             messageTextBody.put("type", "text");
+           // messageTextBody.put("type", "image");
             messageTextBody.put("from", messageSenderID);
 
             Map messageBodyDetails = new HashMap();
@@ -173,7 +189,7 @@ public class ChatActivity extends AppCompatActivity {
                     else
                     {
                         String message = task.getException().getMessage();
-                        Toast.makeText(ChatActivity.this, "Messaged Send Failure: " + message, Toast.LENGTH_SHORT);
+                        Toast.makeText(ChatActivity.this, "Message Send Failure: " + message, Toast.LENGTH_SHORT);
                         userMessageInput.setText("");
                     }
                 }
@@ -184,6 +200,26 @@ public class ChatActivity extends AppCompatActivity {
     private void DisplayReceiverInfo() {
 
         receiverName.setText(messageReceiverName);
+
+
+
+        userProfilePic.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                if (dataSnapshot.exists())
+                {
+                    final String profilePic = dataSnapshot.child("profilePictureLink").getValue().toString();
+
+                    Picasso.get().load(profilePic).into(receiverProfileImage);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         RootRef.child("Users").child(messageReceiverID).addValueEventListener(new ValueEventListener() {
             @Override
@@ -205,6 +241,13 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    public boolean onOptionsItemSelected(MenuItem item){
+        Intent profileIntent = new Intent(getApplicationContext(), PublicProfileActivity.class);
+        profileIntent.putExtra("userID", messageReceiverID);
+        startActivityForResult(profileIntent, 0);
+        return true;
+    }
+
     private void InitializeFields(){
 
         ChattoolBar = (Toolbar) findViewById(R.id.chat_bar_layout);
@@ -221,7 +264,6 @@ public class ChatActivity extends AppCompatActivity {
         receiverProfileImage = (CircleImageView) findViewById(R.id.custom_profile_image);
 
         SendMessageButton = (ImageButton) findViewById(R.id.send_message_button);
-        SendImageButton = (ImageButton) findViewById(R.id.send_image_button);
         userMessageInput = (EditText) findViewById(R.id.input_message);
 
         messageAdapter = new MessagesAdapter(messagesList);
