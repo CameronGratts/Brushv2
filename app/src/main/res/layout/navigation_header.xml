@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="200dp">
+    android:layout_height="200dp"
+    android:background="@color/colorPrimary">
 
     <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/nav_profile_image"
@@ -10,12 +11,11 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="34dp"
-        android:layout_marginLeft="34dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginStart="62dp"
+        android:layout_marginLeft="62dp"
+        android:layout_marginTop="10dp"
         android:src="@drawable/default_profile_picture"
-        app:civ_border_color="@color/colorPrimaryDark"
-        app:civ_border_width="2dp" />
+        app:civ_border_color="@color/colorPrimaryDark"/>
 
     <TextView
         android:id="@+id/nav_username"
@@ -24,11 +24,12 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="41dp"
-        android:layout_marginLeft="41dp"
-        android:layout_marginTop="147dp"
+        android:layout_marginStart="62dp"
+        android:layout_marginLeft="62dp"
+        android:layout_marginTop="157dp"
         android:gravity="center"
         android:text="fullName"
+        android:fontFamily="@font/futura"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="16sp" />
 

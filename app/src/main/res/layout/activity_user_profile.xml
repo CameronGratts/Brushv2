@@ -50,7 +50,7 @@
             android:id="@+id/user_profile_full_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="95dp"
+            android:layout_marginTop="125dp"
             android:layout_marginLeft="170dp"
             android:gravity="top"
             android:paddingLeft="20dp"
@@ -74,27 +74,6 @@
             android:textColor="@color/colorPrimaryDark"
             android:textSize="14dp"
             android:textStyle="bold" />
-
-        <ImageButton
-            android:id="@+id/user_profile_messages"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="158dp"
-            android:layout_marginLeft="200dp"
-            android:background="@null"
-            android:scaleType="fitXY"
-
-            android:src="@drawable/view_messages" />
-
-        <ImageButton
-            android:id="@+id/user_profile_notifications"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="159dp"
-            android:layout_toRightOf="@id/user_profile_messages"
-            android:background="@null"
-            android:src="@drawable/notifications" />
 
         <TextView
             android:id="@+id/user_profile_bio"

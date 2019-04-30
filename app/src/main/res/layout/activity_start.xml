@@ -33,8 +33,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="381dp"
         android:background="@drawable/buttons"
-        android:text="Sign Up"
-        android:fontFamily="@font/futura"/>
+        android:text="Sign Up" />
 
     <Button
         android:id="@+id/start_login"
@@ -44,8 +43,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="293dp"
         android:background="@drawable/buttons"
-        android:text="Login"
-        android:fontFamily="@font/futura"/>
+        android:text="Login" />
 
 
     <TextView
@@ -56,8 +54,6 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="248dp"
         android:textColor="@color/colorAccent"
-        android:text="Forgot Password?"
-        android:fontFamily="@font/futura"
-        android:textStyle="italic"/>
+        android:text="Forgot Password?" />
 
 </RelativeLayout>

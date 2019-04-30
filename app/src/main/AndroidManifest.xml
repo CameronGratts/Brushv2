@@ -15,19 +15,24 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ChatActivity"
-            android:parentActivityName=".PublicProfileActivity"></activity>
+        <activity android:name=".CategoryActivity"></activity>
+        <activity
+            android:name=".ChatActivity"
+            android:parentActivityName=".PublicProfileActivity" />
         <activity android:name=".Followers" />
-        <activity android:name=".ListFollowersActivity"
-            android:parentActivityName=".MainActivity"></activity>
-        <activity android:name=".UserProfileActivity"
-            android:parentActivityName=".MainActivity"/>
+        <activity
+            android:name=".ListFollowersActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".UserProfileActivity"
+            android:parentActivityName=".MainActivity" />
         <activity android:name=".ShowProfilePictureActivity" />
         <activity
             android:name=".SettingsActivity"
             android:parentActivityName=".UserProfileActivity" />
-        <activity android:name=".PublicProfileActivity"
-            android:parentActivityName=".ListFollowersActivity"/>
+        <activity
+            android:name=".PublicProfileActivity"
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".ForgotPasswordActivity"
             android:parentActivityName=".StartActivity" />

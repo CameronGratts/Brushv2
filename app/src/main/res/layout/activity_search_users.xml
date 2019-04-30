@@ -62,68 +62,12 @@
         android:layout_alignParentTop="true"
         android:layout_marginStart="13dp"
         android:layout_marginLeft="13dp"
-        android:layout_marginTop="115dp"
+        android:layout_marginTop="110dp"
         android:text="Categories"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="20dp"
         android:textStyle="bold" />
 
-
-    <ImageButton
-        android:id="@+id/search_digital"
-        android:layout_width="116dp"
-        android:layout_height="106dp"
-        android:layout_below="@+id/search_artisan"
-        android:layout_alignStart="@+id/search_artisan"
-        android:layout_alignLeft="@+id/search_artisan"
-        android:layout_alignBottom="@+id/search_photography"
-        android:layout_gravity="center"
-        android:layout_marginStart="0dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginTop="35dp"
-        android:layout_marginBottom="0dp"
-        android:src="@drawable/search_digital" />
-
-    <ImageButton
-        android:id="@+id/search_artisan"
-        android:layout_width="110dp"
-        android:layout_height="113dp"
-        android:layout_alignTop="@+id/search_traditional"
-        android:layout_gravity="center"
-        android:layout_marginStart="63dp"
-        android:layout_marginLeft="63dp"
-        android:layout_marginTop="4dp"
-        android:layout_toEndOf="@+id/search_traditional"
-        android:layout_toRightOf="@+id/search_traditional"
-        android:src="@drawable/search_artisan" />
-
-    <ImageButton
-        android:id="@+id/search_photography"
-        android:layout_width="110dp"
-        android:layout_height="113dp"
-        android:layout_below="@+id/search_traditional"
-        android:layout_alignEnd="@+id/search_traditional"
-        android:layout_alignRight="@+id/search_traditional"
-        android:layout_gravity="center"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="35dp"
-        android:layout_marginEnd="0dp"
-        android:layout_marginRight="0dp"
-        android:src="@drawable/search_photography" />
-
-    <ImageButton
-        android:id="@+id/search_traditional"
-        android:layout_width="110dp"
-        android:layout_height="113dp"
-        android:layout_below="@+id/categories_textview"
-        android:layout_alignStart="@+id/search_result_list"
-        android:layout_alignLeft="@+id/search_result_list"
-        android:layout_gravity="center"
-        android:layout_marginStart="29dp"
-        android:layout_marginLeft="29dp"
-        android:layout_marginTop="33dp"
-        android:layout_marginRight="20dp"
-        android:src="@drawable/search_traditional" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/search_result_list"
@@ -139,5 +83,60 @@
         android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp">
     </android.support.v7.widget.RecyclerView>
+
+    <ImageButton
+        android:id="@+id/search_digital"
+        android:layout_width="105dp"
+        android:layout_height="108dp"
+        android:layout_below="@+id/search_artisan"
+        android:layout_alignStart="@+id/search_artisan"
+        android:layout_alignLeft="@+id/search_artisan"
+        android:layout_alignBottom="@+id/search_photography"
+        android:layout_gravity="center"
+        android:layout_marginStart="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="0dp"
+        android:src="@drawable/search_digital" />
+
+    <ImageButton
+        android:id="@+id/search_artisan"
+        android:layout_width="105dp"
+        android:layout_height="108dp"
+        android:layout_alignTop="@+id/search_traditional"
+        android:layout_gravity="center"
+        android:layout_marginStart="63dp"
+        android:layout_marginLeft="63dp"
+        android:layout_marginTop="0dp"
+        android:layout_toEndOf="@+id/search_traditional"
+        android:layout_toRightOf="@+id/search_traditional"
+        android:src="@drawable/search_artisan" />
+
+    <ImageButton
+        android:id="@+id/search_photography"
+        android:layout_width="105dp"
+        android:layout_height="108dp"
+        android:layout_below="@+id/search_traditional"
+        android:layout_alignEnd="@+id/search_traditional"
+        android:layout_alignRight="@+id/search_traditional"
+        android:layout_gravity="center"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginRight="0dp"
+        android:src="@drawable/search_photography" />
+
+    <ImageButton
+        android:id="@+id/search_traditional"
+        android:layout_width="105dp"
+        android:layout_height="108dp"
+        android:layout_below="@+id/categories_textview"
+        android:layout_alignStart="@+id/search_result_list"
+        android:layout_alignLeft="@+id/search_result_list"
+        android:layout_gravity="center"
+        android:layout_marginStart="29dp"
+        android:layout_marginLeft="29dp"
+        android:layout_marginRight="20dp"
+        android:src="@drawable/search_traditional" />
 
 </RelativeLayout>

@@ -264,6 +264,15 @@ public class PublicProfileActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+        /*
+        switch (mToolbar.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }*/
+
         userProfileImage = (CircleImageView) findViewById(R.id.public_profile_default_pic);
         userMessage = (ImageButton) findViewById(R.id.public_profile_message);
         userUpdates = (ImageButton) findViewById(R.id.public_profile_updates);

@@ -197,7 +197,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UserProfileActivity extends AppCompatActivity {
 
-    private ImageButton userMessage, userNotifications, userUpdates, userGallery, userShop;
+    private ImageButton userUpdates, userGallery, userShop;
     private CircleImageView userProfileImage;
     private TextView userProfileName, username, userBio;
 
@@ -227,8 +227,6 @@ public class UserProfileActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         userProfileImage = (CircleImageView) findViewById(R.id.user_profile_default_pic);
-        userMessage = (ImageButton) findViewById(R.id.user_profile_messages);
-        userNotifications = (ImageButton) findViewById(R.id.user_profile_notifications);
         userUpdates = (ImageButton) findViewById(R.id.user_profile_updates);
         userGallery = (ImageButton) findViewById(R.id.user_profile_gallery);
         userShop = (ImageButton) findViewById(R.id.user_profile_bids);
@@ -306,24 +304,6 @@ public class UserProfileActivity extends AppCompatActivity {
             }
         });
 
-        userMessage.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                SendUserToMessagesActivity();
-            }
-        });
-
-        userNotifications.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                SendUserToNotificationsActivity();
-            }
-        });
-
         userUpdates.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -350,7 +330,6 @@ public class UserProfileActivity extends AppCompatActivity {
                 SendUserToBidsActivity();
             }
         });
-
     }
 
 
@@ -383,5 +362,4 @@ public class UserProfileActivity extends AppCompatActivity {
         //Intent intent = new Intent(UserProfileActivity.this, BidsActivity.class);
         //startActivity(intent);
     }
-
 }
