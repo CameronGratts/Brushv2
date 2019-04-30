@@ -39,10 +39,14 @@
         <activity
             android:name=".SearchUsersActivity"
             android:parentActivityName=".MainActivity" />
-        <activity android:name=".AnnouncementPostActivity" />
-        <activity android:name=".GalleryPostActivity" />
-        <activity android:name=".BidPostActivity" />
-        <activity android:name=".NewPostActivity" />
+        <activity android:name=".AnnouncementPostActivity"
+            android:parentActivityName=".NewPostActivity"/>
+        <activity android:name=".GalleryPostActivity"
+            android:parentActivityName=".NewPostActivity"/>
+        <activity android:name=".BidPostActivity"
+            android:parentActivityName=".NewPostActivity"/>
+        <activity android:name=".NewPostActivity"
+            android:parentActivityName=".MainActivity"/>
         <activity android:name=".SetupActivity" />
         <activity android:name=".StartActivity">
             <intent-filter>

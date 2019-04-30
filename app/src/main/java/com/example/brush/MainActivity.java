@@ -192,10 +192,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
+
                 int i=0;
                 while(i < num)
                 {
-                    if (model.getPostType().equals("announcement"))
+                    if(model.getPostType().equals("bid"))
+                    {
+                        choice =0;
+                        viewHolder.setPrice(model.getPrice());
+                        viewHolder.setPostImage(model.getPostimage(), choice);
+                        viewHolder.setProfilePicture(model.getProfilePicture(), choice);
+                        viewHolder.setDescription(model.getDescription(), choice);
+                    }
+                    else if (model.getPostType().equals("announcement"))
                     {
                         choice = 1;
                         Log.d(TAG, "user id:" + model.getUid());
@@ -353,6 +362,10 @@ public class MainActivity extends AppCompatActivity {
                 ImageView post_image = (ImageView) mView.findViewById(R.id.feed_gallery_image);
                 Picasso.get().load(postImage).into(post_image);
             }
+        }
+        public void setPrice(String price){
+            TextView postPrice = (TextView) mView.findViewById(R.id.feed_bid_price);
+            postPrice.setVisibility(View.GONE);
         }
         public void hidePosts()
         {
